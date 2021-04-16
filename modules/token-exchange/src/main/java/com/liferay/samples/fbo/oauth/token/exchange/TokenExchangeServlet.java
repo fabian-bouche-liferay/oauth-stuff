@@ -56,18 +56,24 @@ public class TokenExchangeServlet extends HttpServlet {
 			LOG.debug("Token type: {}", tokenType);
 			
 			LOG.debug("property {}", tokenExchangeServiceReferences.get(0).getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE));
+			
+			TokenExchangeService tokenExchangeService = null; 
+					
+			for(int i = 0; i < tokenExchangeServiceReferences.size(); i++) {
+				ServiceReference<TokenExchangeService> serviceReference = tokenExchangeServiceReferences.get(i);
+				String tokenSubjectType = (String) serviceReference.getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE);
+				if(tokenSubjectType != null && tokenSubjectType.equals(tokenType)) {
+					LOG.debug("Fetching TokenExchangeService");
+					tokenExchangeService = _context.getService(serviceReference);
+					LOG.debug("Found TokenExchangeService");
+					break;
+				}
+			}
 
-			TokenExchangeService tokenExchangeService =  tokenExchangeServiceReferences.stream().filter(serviceReference -> (
-					serviceReference.getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE)  != null
-							&& serviceReference.getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE).equals(tokenType)
-				)).map(serviceReference -> _context.getService(serviceReference)).findFirst().get();
-
-		    if(tokenExchangeService == null) {
-				LOG.error("Subject token type {} not implemented", subjectTokenType);
-				resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-				return;
-		    }
-
+			if(tokenExchangeService == null) {
+				throw new NotImplementedSubjectTokenTypeException();
+			}
+			
 		    TokenExchangeResponse tokenExchangeResponse = tokenExchangeService.getTokenExchangeResponse(subjectToken);
 		    
 		    Gson gson = new Gson();

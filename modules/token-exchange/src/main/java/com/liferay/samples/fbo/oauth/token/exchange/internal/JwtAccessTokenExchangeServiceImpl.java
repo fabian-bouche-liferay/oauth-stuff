@@ -60,7 +60,7 @@ public class JwtAccessTokenExchangeServiceImpl implements TokenExchangeService {
 	private LiferayOAuthDataProvider _liferayOAuthDataProvider;
 */
 	
-	@Reference(target = "(component.name=com.liferay.samples.fbo.oauth.token.exchange.internal.LiferayTokenExchangeGrantHandler)")
-	private AccessTokenGrantHandler _accessTokenGrantHandler;
+	@Reference
+	private LiferayTokenExchangeGrantHandler _accessTokenGrantHandler;
 	
 }

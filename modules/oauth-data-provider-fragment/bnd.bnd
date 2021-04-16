@@ -2,7 +2,9 @@ Bundle-Name: oauth-data-provider-fragment
 Bundle-SymbolicName: com.liferay.samples.fbo.oauth.data.provider.fragment
 Bundle-Version: 1.0.0
 
-Export-Package:,\
+Fragment-Host: com.liferay.oauth2.provider.rest
+
+Export-Package:\
 	com.liferay.oauth2.provider.rest.internal.endpoint.liferay,\
 	com.liferay.oauth2.provider.rest.internal.endpoint.access.token.grant.handler,\
 	org.apache.cxf.rs.security.oauth2.common,\

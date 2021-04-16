@@ -17,7 +17,7 @@ import org.osgi.service.component.annotations.Reference;
 
 @Component(
 		configurationPid = "com.liferay.oauth2.provider.configuration.OAuth2ProviderConfiguration",
-		service = AccessTokenGrantHandler.class
+		service = {AccessTokenGrantHandler.class, LiferayTokenExchangeGrantHandler.class}
 	)
 public class LiferayTokenExchangeGrantHandler extends BaseAccessTokenGrantHandler {
 
