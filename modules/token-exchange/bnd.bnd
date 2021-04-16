@@ -1,0 +1,3 @@
+Bundle-Name: token-exchange
+Bundle-SymbolicName: com.liferay.samples.fbo.oauth.token.exchange
+Bundle-Version: 1.0.0
