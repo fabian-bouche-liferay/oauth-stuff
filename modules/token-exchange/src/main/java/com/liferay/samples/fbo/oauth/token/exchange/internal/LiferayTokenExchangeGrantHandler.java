@@ -24,8 +24,7 @@ public class LiferayTokenExchangeGrantHandler extends BaseAccessTokenGrantHandle
 	@Activate
 	protected void activate(Map<String, Object> properties) {
 		
-		_liferayTokenExchangeGrantHandler = new LiferayTokenExchangeGrantHandler();
-
+		_tokenExchangeGrantHandler = new TokenExchangeGrantHandler();
 
 		_oAuth2ProviderConfiguration = ConfigurableUtil.createConfigurable(
 			OAuth2ProviderConfiguration.class, properties);
@@ -34,7 +33,7 @@ public class LiferayTokenExchangeGrantHandler extends BaseAccessTokenGrantHandle
 
 	@Override
 	protected AccessTokenGrantHandler getAccessTokenGrantHandler() {
-		return _liferayTokenExchangeGrantHandler;
+		return _tokenExchangeGrantHandler;
 	}
 
 	@Override
@@ -47,7 +46,7 @@ public class LiferayTokenExchangeGrantHandler extends BaseAccessTokenGrantHandle
 		return true;
 	}
 
-	private LiferayTokenExchangeGrantHandler _liferayTokenExchangeGrantHandler;
+	private TokenExchangeGrantHandler _tokenExchangeGrantHandler;
 	
 	@Reference
 	private LiferayOAuthDataProvider _liferayOAuthDataProvider;

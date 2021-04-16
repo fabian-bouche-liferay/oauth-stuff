@@ -25,40 +25,17 @@ public class JwtAccessTokenExchangeServiceImpl implements TokenExchangeService {
 	public TokenExchangeResponse getTokenExchangeResponse(String token) {
 		TokenExchangeResponse tokenExchangeResponse = new TokenExchangeResponse();
 
-		/*
-		Client client = new Client();
-		client.setClientId(id);
-		UserSubject subject;
-		List<String> approvedScope = new ArrayList<String>();
-		
-		AccessTokenRegistration accessTokenRegistration = new AccessTokenRegistration();
-		accessTokenRegistration.setClient(client);
-		accessTokenRegistration.setSubject(subject);
-		accessTokenRegistration.setApprovedScope(approvedScope);
-		_liferayOAuthDataProvider.createAccessToken(accessTokenRegistration);
-		
-		tokenExchangeResponse.setAccessToken("TOTO");
-		*/
 
 		Client client = new Client();
 		client.setClientId("id-c23ec8b7-7799-8cc8-ec73-3859d4ae74a1");
 		
 		MultivaluedMap<String, String> paramsMap = new MultivaluedHashMap<String, String>();
+		paramsMap.add("access_token", token);
 		
 		_accessTokenGrantHandler.createAccessToken(client, paramsMap);
 		
 		return tokenExchangeResponse;
 	}
-	/*
-	@Reference
-	private OAuth2AuthorizationLocalService _oAuth2AuthorizationLocalService;
-	
-	@Reference
-	private CounterLocalService _counterLocalService;
-
-	@Reference
-	private LiferayOAuthDataProvider _liferayOAuthDataProvider;
-*/
 	
 	@Reference
 	private LiferayTokenExchangeGrantHandler _accessTokenGrantHandler;
