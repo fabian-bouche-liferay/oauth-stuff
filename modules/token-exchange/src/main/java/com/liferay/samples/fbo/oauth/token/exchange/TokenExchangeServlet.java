@@ -5,6 +5,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -14,10 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
 	    immediate = true,
 	    property = {
 	        "osgi.http.whiteboard.context.path=/",
-	        "osgi.http.whiteboard.servlet.pattern=/token-exchange/*"
+	        "osgi.http.whiteboard.servlet.pattern=/token-exchange"
 	    },
 	    service = Servlet.class
 	)
@@ -33,12 +34,11 @@ public class TokenExchangeServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TokenExchangeServlet.class);
 	
-	private ServiceTracker<TokenExchangeService, TokenExchangeService> _tokenExchangeCheckServiceTracker;
-	private BundleContext _context;
-	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
+		LOG.debug("doPost");
+		
 		String grantType = ParamUtil.get(req, "grant_type", "");
 		
 		if(!TokenExchangeConstants.TOKEN_EXCHANGE_GRANT_TYPE.equals(grantType)) {
@@ -49,40 +49,40 @@ public class TokenExchangeServlet extends HttpServlet {
 		String subjectToken = ParamUtil.get(req, "subject_token", "");
 		String subjectTokenType = ParamUtil.get(req, "subject_token_type", "");
 		
-		String tokenType = null;
+		LOG.debug("Service references: {}", tokenExchangeServiceReferences.size());
+		
 		try {
-			tokenType = determineSubjectTokenType(subjectToken, subjectTokenType);
+			final String tokenType = determineSubjectTokenType(subjectToken, subjectTokenType);
+			LOG.debug("Token type: {}", tokenType);
+			
+			LOG.debug("property {}", tokenExchangeServiceReferences.get(0).getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE));
+
+			TokenExchangeService tokenExchangeService =  tokenExchangeServiceReferences.stream().filter(serviceReference -> (
+					serviceReference.getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE)  != null
+							&& serviceReference.getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE).equals(tokenType)
+				)).map(serviceReference -> _context.getService(serviceReference)).findFirst().get();
+
+		    if(tokenExchangeService == null) {
+				LOG.error("Subject token type {} not implemented", subjectTokenType);
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+				return;
+		    }
+
+		    TokenExchangeResponse tokenExchangeResponse = tokenExchangeService.getTokenExchangeResponse(subjectToken);
+		    
+		    Gson gson = new Gson();
+		    String jsonInString = gson.toJson(tokenExchangeResponse);
+		    
+		    PrintWriter writer = resp.getWriter();
+		    writer.print(jsonInString);
+		    writer.close();
+			
 		} catch (NotImplementedSubjectTokenTypeException e) {
 			LOG.error("Subject token type {} not implemented", subjectTokenType);
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			return;
 		}
-		
-		TokenExchangeService tokenExchangeService = null;
-		
-	    ServiceReference<TokenExchangeService>[] serviceReferences = this._tokenExchangeCheckServiceTracker.getServiceReferences();
-	    for(int i = 0; i < serviceReferences.length; i++) {
-	    	ServiceReference<TokenExchangeService> serviceReference = serviceReferences[i];
-	    	String serviceReferenceTokenSubjectType = (String) serviceReference.getProperty(TokenExchangeConstants.TOKEN_SUBJECT_TYPE);
-	    	if(serviceReferenceTokenSubjectType != null && serviceReferenceTokenSubjectType.equals(tokenType)) {
-	    		tokenExchangeService = this._tokenExchangeCheckServiceTracker.getService(serviceReference);
-	    		break;
-	    	}
-	    }
-	    
-	    if(tokenExchangeService == null) {
-			LOG.error("Subject token type {} not implemented", subjectTokenType);
-			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-	    }
-
-	    TokenExchangeResponse tokenExchangeResponse = tokenExchangeService.getTokenExchangeResponse(subjectToken);
-	    
-	    Gson gson = new Gson();
-	    String jsonInString = gson.toJson(tokenExchangeResponse);
-	    
-	    PrintWriter writer = resp.getWriter();
-	    writer.print(jsonInString);
-	    
-		super.doPost(req, resp);
+			    
 	}
 
 	private String determineSubjectTokenType(String subjectToken, String subjectTokenType) throws NotImplementedSubjectTokenTypeException {
@@ -97,25 +97,19 @@ public class TokenExchangeServlet extends HttpServlet {
 		
 	}
 	
+	public void activate(BundleContext context) {
+		_context = context;
+	}
+	
 	private boolean isJwt(String token) {
 		return true;
 	}
 	
-	@Activate
-	public void activate(BundleContext bundleContext) {
-
-		_context = bundleContext;
-		this._tokenExchangeCheckServiceTracker = new ServiceTracker<>(
-	        _context, TokenExchangeService.class, null);
-	    this._tokenExchangeCheckServiceTracker.open();
-
-	}
-
-	@Deactivate
-	public void deactivate() {
-		
-		this._tokenExchangeCheckServiceTracker.close();
-
-	}
+	@Reference(
+			cardinality = ReferenceCardinality.MULTIPLE,
+			policyOption = ReferencePolicyOption.GREEDY			
+			)
+	private List<ServiceReference<TokenExchangeService>> tokenExchangeServiceReferences;
 	
+	private BundleContext _context;
 }
