@@ -87,6 +87,10 @@ public class TokenExchangeServlet extends HttpServlet {
 			LOG.error("Subject token type {} not implemented", subjectTokenType);
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
+		} catch (InvalidTokenException e) {
+			LOG.error("Invalid token", e);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+			return;
 		}
 			    
 	}
