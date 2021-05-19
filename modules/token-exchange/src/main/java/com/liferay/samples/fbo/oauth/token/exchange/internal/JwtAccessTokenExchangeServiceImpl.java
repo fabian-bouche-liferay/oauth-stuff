@@ -19,11 +19,13 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -37,7 +39,7 @@ import org.osgi.service.component.annotations.Reference;
 public class JwtAccessTokenExchangeServiceImpl implements TokenExchangeService {
 
 	@Override
-	public TokenExchangeResponse getTokenExchangeResponse(String token) throws InvalidTokenException {
+	public TokenExchangeResponse getTokenExchangeResponse(String token, long companyId) throws InvalidTokenException {
 		TokenExchangeResponse tokenExchangeResponse = new TokenExchangeResponse();
 
 		DecodedJWT jwt = JWT.decode(token);
@@ -72,11 +74,18 @@ public class JwtAccessTokenExchangeServiceImpl implements TokenExchangeService {
 		    
 			MultivaluedMap<String, String> paramsMap = new MultivaluedHashMap<String, String>();
 			paramsMap.add("access_token", token);
-			paramsMap.add("userSubject", jwt.getSubject());
+			paramsMap.add("email", jwt.getClaim("email").asString());
+			paramsMap.add("companyId", String.valueOf(companyId));
 			paramsMap.addAll("approvedScopes", approvedScopesList);
-			//paramsMap.addAll("audiences", jwt.getAudience());
 			
-			_accessTokenGrantHandler.createAccessToken(client, paramsMap);
+			ServerAccessToken serverAccessToken = _accessTokenGrantHandler.createAccessToken(client, paramsMap);
+			
+			tokenExchangeResponse.setAccessToken(serverAccessToken.getTokenKey());
+			tokenExchangeResponse.setExpiresIn(serverAccessToken.getExpiresIn());
+			tokenExchangeResponse.setIssuedTokenType("urn:ietf:params:oauth:token-type:access_token");
+			tokenExchangeResponse.setRefreshToken(serverAccessToken.getRefreshToken());
+			tokenExchangeResponse.setScope(serverAccessToken.getScopes().stream().map(scope -> scope.getPermission()).collect(Collectors.joining(",")));
+			tokenExchangeResponse.setTokenType(serverAccessToken.getTokenType());
 			
 			return tokenExchangeResponse;
 			

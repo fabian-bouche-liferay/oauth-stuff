@@ -14,7 +14,7 @@ public class TokenExchangeResponse {
 	private String tokenType;
 
 	@SerializedName("expires_in")
-	private int expiresIn;
+	private long expiresIn;
 
 	@SerializedName("scope")
 	private String scope;
@@ -46,11 +46,11 @@ public class TokenExchangeResponse {
 		this.tokenType = tokenType;
 	}
 
-	public int getExpiresIn() {
+	public long getExpiresIn() {
 		return expiresIn;
 	}
 
-	public void setExpiresIn(int expiresIn) {
+	public void setExpiresIn(long expiresIn) {
 		this.expiresIn = expiresIn;
 	}
 

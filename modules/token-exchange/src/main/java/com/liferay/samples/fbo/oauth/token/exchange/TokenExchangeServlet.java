@@ -2,6 +2,7 @@ package com.liferay.samples.fbo.oauth.token.exchange;
 
 import com.google.gson.Gson;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,6 +40,8 @@ public class TokenExchangeServlet extends HttpServlet {
 
 		LOG.debug("doPost");
 		
+		long companyId = _portal.getCompanyId(req);
+		
 		String grantType = ParamUtil.get(req, "grant_type", "");
 		
 		if(!TokenExchangeConstants.TOKEN_EXCHANGE_GRANT_TYPE.equals(grantType)) {
@@ -74,7 +77,7 @@ public class TokenExchangeServlet extends HttpServlet {
 				throw new NotImplementedSubjectTokenTypeException();
 			}
 			
-		    TokenExchangeResponse tokenExchangeResponse = tokenExchangeService.getTokenExchangeResponse(subjectToken);
+		    TokenExchangeResponse tokenExchangeResponse = tokenExchangeService.getTokenExchangeResponse(subjectToken, companyId);
 		    
 		    Gson gson = new Gson();
 		    String jsonInString = gson.toJson(tokenExchangeResponse);
@@ -122,4 +125,7 @@ public class TokenExchangeServlet extends HttpServlet {
 	private List<ServiceReference<TokenExchangeService>> tokenExchangeServiceReferences;
 	
 	private BundleContext _context;
+	
+	@Reference
+	private Portal _portal;
 }
