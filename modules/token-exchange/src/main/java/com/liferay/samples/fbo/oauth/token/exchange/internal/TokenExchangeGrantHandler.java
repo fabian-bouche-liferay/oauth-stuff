@@ -32,16 +32,12 @@ public class TokenExchangeGrantHandler extends AbstractGrantHandler {
 		String companyIdString = params.get("companyId").get(0);
 		long companyId = Long.parseLong(companyIdString);
 		
-		System.out.println("Email: " + emailAddress);
 		User user = UserLocalServiceUtil.fetchUserByEmailAddress(companyId, emailAddress);
 		
 		UserSubject subject = new UserSubject(user.getScreenName());
 		subject.setId(String.valueOf(user.getUserId()));
 		
 		List<String> scopes = params.get("approvedScopes"); 
-
-		System.out.println("User subject: " + subject.getId());
-		System.out.println("Client ID: " + client.getClientId());
 		
 		client.getProperties().put(OAuth2ProviderRESTEndpointConstants.PROPERTY_KEY_COMPANY_ID, companyIdString);
 		
