@@ -1,9 +1,7 @@
-package com.liferay.samples.fbo.oauth.token.exchange.internal;
+package com.liferay.samples.fbo.oauth.token.exchange.internal.jwt;
 
-import com.liferay.oauth2.provider.configuration.OAuth2ProviderConfiguration;
 import com.liferay.oauth2.provider.rest.internal.endpoint.access.token.grant.handler.BaseAccessTokenGrantHandler;
 import com.liferay.oauth2.provider.rest.internal.endpoint.liferay.LiferayOAuthDataProvider;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 
 import java.util.Map;
 
@@ -17,17 +15,14 @@ import org.osgi.service.component.annotations.Reference;
 
 @Component(
 		configurationPid = "com.liferay.oauth2.provider.configuration.OAuth2ProviderConfiguration",
-		service = {AccessTokenGrantHandler.class, LiferayTokenExchangeGrantHandler.class}
+		service = {AccessTokenGrantHandler.class, LiferayJwtAccessTokenExchangeGrantHandler.class}
 	)
-public class LiferayTokenExchangeGrantHandler extends BaseAccessTokenGrantHandler {
+public class LiferayJwtAccessTokenExchangeGrantHandler extends BaseAccessTokenGrantHandler {
 
 	@Activate
 	protected void activate(Map<String, Object> properties) {
 		
-		_tokenExchangeGrantHandler = new TokenExchangeGrantHandler(_liferayOAuthDataProvider);
-
-		_oAuth2ProviderConfiguration = ConfigurableUtil.createConfigurable(
-			OAuth2ProviderConfiguration.class, properties);
+		_tokenExchangeGrantHandler = new JwtAccessTokenExchangeGrantHandler(_liferayOAuthDataProvider);
 
 	}
 
@@ -46,10 +41,9 @@ public class LiferayTokenExchangeGrantHandler extends BaseAccessTokenGrantHandle
 		return true;
 	}
 
-	private TokenExchangeGrantHandler _tokenExchangeGrantHandler;
+	private JwtAccessTokenExchangeGrantHandler _tokenExchangeGrantHandler;
 	
 	@Reference
 	private LiferayOAuthDataProvider _liferayOAuthDataProvider;
-	
-	private OAuth2ProviderConfiguration _oAuth2ProviderConfiguration;
+
 }

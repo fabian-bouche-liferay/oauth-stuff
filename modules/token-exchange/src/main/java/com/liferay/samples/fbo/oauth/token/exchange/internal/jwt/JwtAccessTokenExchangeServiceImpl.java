@@ -1,4 +1,4 @@
-package com.liferay.samples.fbo.oauth.token.exchange.internal;
+package com.liferay.samples.fbo.oauth.token.exchange.internal.jwt;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
@@ -96,6 +96,6 @@ public class JwtAccessTokenExchangeServiceImpl implements TokenExchangeService {
 	}
 	
 	@Reference
-	private LiferayTokenExchangeGrantHandler _accessTokenGrantHandler;
+	private LiferayJwtAccessTokenExchangeGrantHandler _accessTokenGrantHandler;
 	
 }

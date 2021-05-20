@@ -50,3 +50,41 @@ As said earlier, there could be many other possibilities and as many implementat
 So the idea is to have a `ServiceTracker` in the `TokenExchangeServlet` that fetches
 the right implementation for the token using a property in the TokenExchangeService
 component's registration.
+
+### Testing!
+
+Setup an external Authorization Server that delivers JWT OAuth 2.0 Access tokens.
+Configure it so that it delivers `Liferay.Headless.Delivery.everything.read` among the scopes of
+the JWT token's `scope` claim.
+ 
+I've used Keycloak for my PoC.
+
+You shall now create a user with the same email address both in Keycloak and Liferay.
+And you shall create an *OAuth 2 Application* in Liferay and a *Client* in Keycloak
+with **matching client ids**.
+
+Make an authorization code flow against Keycloak and extract the JWT access token.
+
+Now, it the Liferay http://localhost:8080/o/token-exchange endpoint with 
+`Content-Type: application/x-www-form-urlencoded` form `POST` with the following fields:
+
+```
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+subject_token=The_JWT_Token_You_Got_From_Keycloak
+subject_token_type=urn:ietf:params:oauth:token-type:access_token
+```
+
+The Liferay endpoint will reply with something like that:
+
+```
+{
+	"access_token":"e13ffaae6d2670433cd39b75f1511728fa29a5649422a8b249c65aa6d450b6",
+	"issued_token_type":"urn:ietf:params:oauth:token-type:access_token",
+	"token_type":"Bearer",
+	"expires_in":600,
+	"scope":"openid,email,profile,Liferay.Headless.Delivery.everything.read,refreshToken",
+	"refresh_token":"baae994565f83629b83efc93d28e4f60b9efd16fcc5243dff2df4e452384052"
+}
+```
+
+You can now use that access token against the Liferay APIs!

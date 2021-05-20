@@ -1,4 +1,4 @@
-package com.liferay.samples.fbo.oauth.token.exchange.internal;
+package com.liferay.samples.fbo.oauth.token.exchange.internal.jwt;
 
 import com.liferay.oauth2.provider.rest.internal.endpoint.constants.OAuth2ProviderRESTEndpointConstants;
 import com.liferay.oauth2.provider.rest.internal.endpoint.liferay.LiferayOAuthDataProvider;
@@ -15,11 +15,11 @@ import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oauth2.grants.AbstractGrantHandler;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 
-public class TokenExchangeGrantHandler extends AbstractGrantHandler {
+public class JwtAccessTokenExchangeGrantHandler extends AbstractGrantHandler {
 
 	public static final String TOKEN_EXCHANGE_GRANT = "token-exchange";
 	
-	protected TokenExchangeGrantHandler(LiferayOAuthDataProvider _liferayOAuthDataProvider) {
+	protected JwtAccessTokenExchangeGrantHandler(LiferayOAuthDataProvider _liferayOAuthDataProvider) {
 		super(TOKEN_EXCHANGE_GRANT);
 		setDataProvider(_liferayOAuthDataProvider);
 	}
